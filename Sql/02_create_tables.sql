@@ -1,5 +1,4 @@
 -- Run AFTER 01_create_database.sql.
--- No GO statements. Tables are created in parent-before-child order.
 USE CruiseShipDB;
 
 -- 1. Ports: parent of Voyages
@@ -13,7 +12,7 @@ CREATE TABLE Ports (
     CONSTRAINT CK_Ports_DockingFee CHECK (DockingFee >= 0)
 );
 
--- 2. Voyages: each voyage references a departure port
+-- 2. Voyages: each voyage shows a departure port
 CREATE TABLE Voyages (
     VoyageID INT IDENTITY(1,1) NOT NULL,
     VoyageCode VARCHAR(20) NOT NULL,
