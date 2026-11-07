@@ -1,8 +1,4 @@
--- SQL Server / T-SQL.
--- IMPORTANT: Run CREATE DATABASE as a standalone batch in SSMS.
--- Connect to master using the database dropdown BEFORE executing.
--- Ensure C:\SQLData exists and the SQL Server service can write there.
--- No GO batch separator is used.
+
 CREATE DATABASE CruiseShipDB
 ON PRIMARY
 (
