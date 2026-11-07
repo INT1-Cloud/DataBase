@@ -1,9 +1,5 @@
--- Non-destructive examples. Safe to re-run after seeding.
+
 USE CruiseShipDB;
-
--- List all user tables
-SELECT name AS TableName FROM sys.tables ORDER BY name;
-
 -- Inspect individual tables
 SELECT * FROM Ports;
 SELECT * FROM Voyages;
@@ -21,25 +17,6 @@ UNION ALL SELECT 'Passengers', COUNT(*) FROM Passengers
 UNION ALL SELECT 'Crew', COUNT(*) FROM Crew
 UNION ALL SELECT 'Activities', COUNT(*) FROM Activities
 UNION ALL SELECT 'Passenger_Activities', COUNT(*) FROM Passenger_Activities;
-
--- View voyages with their departure ports
-SELECT v.VoyageCode, v.DepartureDate, p.PortName, p.Country
-FROM Voyages AS v
-INNER JOIN Ports AS p ON v.DeparturePortID = p.PortID;
-
--- View passengers and their cabin/voyage details
-SELECT p.PassengerID, p.First_name, p.Last_name, c.CabinNumber, v.VoyageCode
-FROM Passengers AS p
-INNER JOIN Cabins AS c ON p.CabinID = c.CabinID
-INNER JOIN Voyages AS v ON c.VoyageID = v.VoyageID;
-
--- View booked activities (and estimated cost)
-SELECT p.First_name, p.Last_name, a.ActivityName,
-       pa.TicketsCount, a.Cost,
-       pa.TicketsCount * a.Cost AS TotalCost
-FROM Passenger_Activities AS pa
-INNER JOIN Passengers AS p ON pa.PassengerID = p.PassengerID
-INNER JOIN Activities AS a ON pa.ActivityID = a.ActivityID;
 
 -- Show foreign key mappings
 SELECT fk.name AS ForeignKeyName,
