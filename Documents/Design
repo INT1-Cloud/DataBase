@@ -1,0 +1,116 @@
+# CruiseShipDB — Schema and Relationship Notes
+
+## Purpose
+Educational Microsoft SQL Server database modeling a cruise operation: departure ports, voyages, voyage cabins, passengers, crew, and bookable activities.
+
+## Tables and keys
+| Table | Primary key | Foreign keys | Meaning |
+|---|---|---|---|
+| Ports | PortID | — | Departure ports and docking fees |
+| Voyages | VoyageID | DeparturePortID → Ports.PortID | Trips and schedules |
+| Cabins | CabinID | VoyageID → Voyages.VoyageID | Cabins linked to voyages |
+| Passengers | PassengerID | CabinID → Cabins.CabinID | Passenger identity and cabin assignment |
+| Crew | CrewID | VoyageID → Voyages.VoyageID | Crew assignments |
+| Activities | ActivityID | — | Available activities |
+| Passenger_Activities | BookingID | PassengerID → Passengers.PassengerID; ActivityID → Activities.ActivityID | Passenger activity bookings |
+
+## Cardinalities
+- **Ports (1) → Voyages (many):** a port can be referenced by several voyages; each voyage has one departure port.
+- **Voyages (1) → Cabins (many):** a voyage can have several cabins; each cabin row belongs to one voyage.
+- **Cabins (1) → Passengers (many):** a cabin can be referenced by several passengers; each passenger row references one cabin.
+- **Voyages (1) → Crew (many):** a voyage can have multiple crew rows.
+- **Passengers (many) ↔ Activities (many):** implemented as two 1:M relationships through `Passenger_Activities`.
+
+## Compact conceptual relationship diagram
+```mermaid
+erDiagram
+    PORTS ||--o{ VOYAGES : departure_port_for
+    VOYAGES ||--o{ CABINS : contains
+    VOYAGES ||--o{ CREW : assigns
+    CABINS ||--o{ PASSENGERS : accommodates
+    PASSENGERS ||--o{ PASSENGER_ACTIVITIES : books
+    ACTIVITIES ||--o{ PASSENGER_ACTIVITIES : reserved_in
+```
+
+## Mapping diagram (tables + column keys)
+GitHub can render the following Mermaid ER diagram. It shows every column and key. Exact SQL column types and constraints are in `sql/02_create_tables.sql`.
+```mermaid
+erDiagram
+    PORTS {
+        int PortID PK
+        varchar PortName UK
+        varchar Country
+        decimal DockingFee
+    }
+    VOYAGES {
+        int VoyageID PK
+        varchar VoyageCode UK
+        date DepartureDate
+        date ReturnDate
+        varchar VoyageStatus
+        int DeparturePortID FK
+    }
+    CABINS {
+        int CabinID PK
+        varchar CabinNumber UK
+        varchar CabinType
+        decimal PricePerNight
+        int VoyageID FK
+    }
+    PASSENGERS {
+        int PassengerID PK
+        varchar First_name
+        varchar Last_name
+        date Reg_date
+        varchar Email UK
+        varchar PassportNo UK
+        int CabinID FK
+    }
+    CREW {
+        int CrewID PK
+        varchar FullName
+        varchar RoleTitle
+        decimal Salary
+        date HireDate
+        int VoyageID FK
+    }
+    ACTIVITIES {
+        int ActivityID PK
+        varchar ActivityName
+        varchar LocationOnDeck
+        decimal Cost
+    }
+    PASSENGER_ACTIVITIES {
+        int BookingID PK
+        int PassengerID FK
+        int ActivityID FK
+        date BookingDate
+        int TicketsCount
+    }
+    PORTS ||--o{ VOYAGES : "PortID = DeparturePortID"
+    VOYAGES ||--o{ CABINS : "VoyageID"
+    VOYAGES ||--o{ CREW : "VoyageID"
+    CABINS ||--o{ PASSENGERS : "CabinID"
+    PASSENGERS ||--o{ PASSENGER_ACTIVITIES : "PassengerID"
+    ACTIVITIES ||--o{ PASSENGER_ACTIVITIES : "ActivityID"
+```
+
+## Counts for the assignment
+- 4 physical files: 1 MDF, 1 NDF, 2 LDF; initial size, max size, and filegrowth specified for each.
+- 7 tables and 7 primary keys.
+- 6 foreign keys.
+- 5 unique constraints.
+- 7 check constraints.
+- 4 default constraints.
+- Mandatory fields marked NOT NULL.
+
+## Design limitations / possible improvements
+These are intentionally **not** changed in the SQL files, so the repository matches the original coursework schema:
+1. `CabinNumber` is globally unique. A real system likely needs ships and cabins per ship, or at minimum `(VoyageID, CabinNumber)` uniqueness.
+2. There is no CHECK requiring `ReturnDate > DepartureDate`.
+3. Cabins have no capacity enforcement.
+4. Activity bookings have no voyage/date alignment checks or duplicate-booking policy.
+5. A `SecondaryFG` filegroup is created, but the tables are not explicitly placed on it.
+6. This models a learning exercise, not a production-ready booking system.
+
+**Diagram note:** The two Mermaid diagrams give teammates a conceptual ERD and column-level mapping view on GitHub. If the instructor requires a specific formal ERD notation or image/PDF submission, export and review them using the required notation.
