@@ -1,0 +1,6 @@
+Execute only if you want to erase CruiseShipDB.
+Run this script independently while connected to the master database.
+USE master;
+
+    DROP DATABASE CruiseShipDB;
+END;
